@@ -19,17 +19,17 @@ class Inicio(ctk.CTkFrame):
         self.configure(bg_color='white')
 
         # Cargar imagen del logo
-        logo_img = Image.open("emociones2.png")  # Asegúrate de poner la ruta correcta
+        logo_img = Image.open("logo3.png")  # Asegúrate de poner la ruta correcta
         logo_img = logo_img.resize((300, 300))  # Ajusta el tamaño del logo si es necesario
         logo_img_tk = ImageTk.PhotoImage(logo_img)
 
         # Crear una etiqueta para mostrar el logo
-        logo_label = ctk.CTkLabel(self, image=logo_img_tk)
+        logo_label = ctk.CTkLabel(self, image=logo_img_tk, text="")
         logo_label.image = logo_img_tk  # Guardar una referencia de la imagen
         logo_label.pack(pady=20)
 
         # Título de la ventana de inicio (corregido: usando `text_color` en lugar de `fg`)
-        ctk.CTkLabel(self, text="EmotionSense AI", font=("Arial Black", 28), text_color='black').pack(pady=40)
+        ctk.CTkLabel(self, text="EmotionSense AI :)", font=("Segoe UI Black", 50), text_color='#6A5ACD').pack(pady=40)
 
         # Botones con colores personalizados
         ctk.CTkButton(self, text="Iniciar Análisis", command=self.ir_a_analisis, width=200, 
