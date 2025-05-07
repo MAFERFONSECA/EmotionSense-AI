@@ -1,0 +1,10 @@
+Emoción detectada: Enojo
+Emoción detectada: Feliz
+Emoción no válida
+Resultado guardado.
+Resultado guardado.
+Emoción detectada: Feliz
+Emoción detectada: Feliz
+Emoción detectada: Enojo
+Emoción detectada: Feliz
+Emoción detectada: Feliz
