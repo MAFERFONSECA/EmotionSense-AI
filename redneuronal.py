@@ -6,6 +6,8 @@ from deepface import DeepFace
 import threading
 import numpy as np
 from datetime import datetime
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
@@ -28,7 +30,7 @@ class Inicio(ctk.CTkFrame):
         ctk.CTkButton(self, text="Iniciar Análisis", command=self.ir_a_analisis, width=200,
                       fg_color="#3ba200", hover_color="#297200", border_color="black").pack(pady=10)
 
-        ctk.CTkButton(self, text="📜 Ver Historial", command=self.ir_a_historial, width=200,
+        ctk.CTkButton(self, text="📊 Ver Gráfica", command=self.ir_a_historial, width=200,
                       fg_color="#6a5acd", hover_color="#483d8b", border_color="black").pack(pady=10)
 
         ctk.CTkButton(self, text="Salir", command=self.master.quit, width=100,
@@ -54,7 +56,7 @@ class Analisis(ctk.CTkFrame):
             'sad': 'Triste',
         }
 
-        ctk.CTkLabel(self, text="Análisis Facial", font=("Arial", 22), text_color='black').pack(pady=10)
+        ctk.CTkLabel(self, text="Análisis Facial", font=("Segoe UI Black", 22), text_color='#483D8B').pack(pady=10)
 
         btn_frame = ctk.CTkFrame(self)
         btn_frame.pack(pady=5)
@@ -78,10 +80,10 @@ class Analisis(ctk.CTkFrame):
         btm_frame.pack(pady=5)
 
         ctk.CTkButton(btm_frame, text="⬅ Volver", command=self.volver, width=150,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=0, padx=10)
+                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=0, padx=10)
 
         ctk.CTkButton(btm_frame, text="💾 Guardar Resultado", command=self.save_results, width=180,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=1, padx=10)
+                       fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=1, padx=10)
 
     def volver(self):
         if self.camera_active:
@@ -164,51 +166,68 @@ class Analisis(ctk.CTkFrame):
             f.write(self.result_label.cget("text") + "\n")
         self.result_label.configure(text="Resultado guardado.")
 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 class Historial(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.master = master
 
-        ctk.CTkLabel(self, text="Historial de Emociones", font=("Arial", 24), text_color="#483D8B").pack(pady=10)
+        ctk.CTkLabel(self, text="Total de Emociones", font=("Segoe UI Black", 24), text_color="#483D8B").pack(pady=10)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self, width=800, height=500)
         self.scroll_frame.pack(pady=10)
 
+        # Crear un frame donde se dibujará la gráfica
+        self.graph_frame = ctk.CTkFrame(self.scroll_frame, width=800, height=500)
+        self.graph_frame.pack(padx=10, pady=10)
+
         btn_frame = ctk.CTkFrame(self)
         btn_frame.pack(pady=10)
 
-        ctk.CTkButton(btn_frame, text="🔄 Recargar", command=self.cargar_historial, width=150,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=0, padx=10)
-
-        ctk.CTkButton(btn_frame, text="🗑 Borrar Todo", command=self.borrar_historial, width=150,
-                      fg_color="red", hover_color="#8B0000").grid(row=0, column=1, padx=10)
+        ctk.CTkButton(btn_frame, text="🔄 Actualizar Gráfica", command=self.cargar_grafica, width=150,
+                       fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=0, padx=10)
 
         ctk.CTkButton(btn_frame, text="⬅ Volver", command=self.volver, width=150,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=2, padx=10)
+                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=1, padx=10)
 
-        self.cargar_historial()
+        self.cargar_grafica()
 
-    def cargar_historial(self):
-        for widget in self.scroll_frame.winfo_children():
+    def cargar_grafica(self):
+        # Limpiar la gráfica anterior si existe
+        for widget in self.graph_frame.winfo_children():
             widget.destroy()
 
+        # Cargar las emociones desde el archivo de historial
+        emociones = {'Enojo': 0, 'Feliz': 0, 'Triste': 0}
         try:
             with open("historial_emociones.txt", "r", encoding="utf-8") as f:
                 lineas = f.readlines()
-                if not lineas:
-                    ctk.CTkLabel(self.scroll_frame, text="Sin datos aún.").pack(pady=10)
-                    return
                 for linea in lineas:
-                    ctk.CTkLabel(self.scroll_frame, text=linea.strip(), anchor="w").pack(padx=10, pady=4, fill="x")
+                    emocion = linea.strip().split(" | ")[1]
+                    if emocion in emociones:
+                        emociones[emocion] += 1
         except FileNotFoundError:
             ctk.CTkLabel(self.scroll_frame, text="No se encontró historial.").pack(pady=10)
+            return
 
-    def borrar_historial(self):
-        open("historial_emociones.txt", "w").close()
-        self.cargar_historial()
+        # Crear la gráfica
+        fig, ax = plt.subplots(figsize=(9, 7))
+        ax.bar(emociones.keys(), emociones.values(), color=['red', 'yellow', 'blue'])
+
+        ax.set_xlabel("Emociones")
+        ax.set_ylabel("Frecuencia")
+        ax.set_title("Frecuencia de Emociones Detectadas")
+
+        # Mostrar la gráfica en el frame de la interfaz
+        canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
 
     def volver(self):
         self.master.mostrar_ventana(Inicio)
+
 
 class EmotionSenseApp(ctk.CTk):
     def __init__(self):

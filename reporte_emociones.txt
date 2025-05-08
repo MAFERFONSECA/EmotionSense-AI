@@ -8,3 +8,5 @@ Emoción detectada: Feliz
 Emoción detectada: Enojo
 Emoción detectada: Feliz
 Emoción detectada: Feliz
+Emoción detectada: Triste
+Emoción detectada: ---
