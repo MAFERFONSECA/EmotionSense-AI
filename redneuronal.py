@@ -80,10 +80,10 @@ class Analisis(ctk.CTkFrame):
         btm_frame.pack(pady=5)
 
         ctk.CTkButton(btm_frame, text="⬅ Volver", command=self.volver, width=150,
-                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=0, padx=10)
+                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=1, padx=10)
 
         ctk.CTkButton(btm_frame, text="💾 Guardar Resultado", command=self.save_results, width=180,
-                       fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=1, padx=10)
+                       fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=0, padx=10)
 
     def volver(self):
         if self.camera_active:
