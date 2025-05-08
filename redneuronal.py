@@ -187,11 +187,15 @@ class Historial(ctk.CTkFrame):
         btn_frame.pack(pady=10)
 
         ctk.CTkButton(btn_frame, text="🔄 Actualizar Gráfica", command=self.cargar_grafica, width=150,
-                       fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=0, padx=10)
+                      fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=0, padx=10)
+
+        ctk.CTkButton(btn_frame, text="💾 Guardar Gráfica", command=self.guardar_grafica, width=150,
+                      fg_color="#6a5acd", hover_color="#483d8b", border_color="black").grid(row=0, column=1, padx=10)
 
         ctk.CTkButton(btn_frame, text="⬅ Volver", command=self.volver, width=150,
-                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=1, padx=10)
+                      fg_color="#a20000", hover_color="#720000", border_color="black").grid(row=0, column=2, padx=10)
 
+        self.figure = None  # Para almacenar la figura actual
         self.cargar_grafica()
 
     def cargar_grafica(self):
@@ -213,17 +217,24 @@ class Historial(ctk.CTkFrame):
             return
 
         # Crear la gráfica
-        fig, ax = plt.subplots(figsize=(9, 7))
+        self.figure, ax = plt.subplots(figsize=(9, 7))
         ax.bar(emociones.keys(), emociones.values(), color=['red', 'yellow', 'blue'])
-
         ax.set_xlabel("Emociones")
         ax.set_ylabel("Frecuencia")
         ax.set_title("Frecuencia de Emociones Detectadas")
 
         # Mostrar la gráfica en el frame de la interfaz
-        canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
+        canvas = FigureCanvasTkAgg(self.figure, master=self.graph_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill='both', expand=True)
+
+    def guardar_grafica(self):
+        if self.figure:
+            archivo = filedialog.asksaveasfilename(defaultextension=".png",
+                                                   filetypes=[("PNG Image", "*.png")],
+                                                   title="Guardar gráfica como...")
+            if archivo:
+                self.figure.savefig(archivo)
 
     def volver(self):
         self.master.mostrar_ventana(Inicio)
