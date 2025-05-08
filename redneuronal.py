@@ -26,13 +26,13 @@ class Inicio(ctk.CTkFrame):
         ctk.CTkLabel(self, text="EmotionSense AI :)", font=("Segoe UI Black", 50), text_color='#6A5ACD').pack(pady=40)
 
         ctk.CTkButton(self, text="Iniciar Análisis", command=self.ir_a_analisis, width=200,
-                      fg_color="#6a5acd", hover_color="#483d8b", border_color="black").pack(pady=10)
+                      fg_color="#3ba200", hover_color="#297200", border_color="black").pack(pady=10)
 
         ctk.CTkButton(self, text="📜 Ver Historial", command=self.ir_a_historial, width=200,
                       fg_color="#6a5acd", hover_color="#483d8b", border_color="black").pack(pady=10)
 
-        ctk.CTkButton(self, text="Salir", command=self.master.quit, width=200,
-                      fg_color="#6a5acd", hover_color="#483d8b", border_color="black").pack(pady=10)
+        ctk.CTkButton(self, text="Salir", command=self.master.quit, width=100,
+                      fg_color="#a20000", hover_color="#720000", border_color="black").pack(pady=10)
 
     def ir_a_analisis(self):
         self.master.mostrar_ventana(Analisis)
