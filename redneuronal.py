@@ -8,6 +8,8 @@ import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import time
+
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("green")
@@ -90,12 +92,12 @@ class Analisis(ctk.CTkFrame):
             self.camera_active = False
             self.cap.release()
         self.master.mostrar_ventana(Inicio)
-
+    
     def toggle_camera(self):
         if self.camera_active:
             self.camera_active = False
             self.cap.release()
-            self.image_canvas.configure(image=None, text="Cámara detenida")
+            self.image_canvas.configure(image=None, text="Activa tu camara")
         else:
             self.cap = cv2.VideoCapture(0)
             self.camera_active = True
@@ -106,11 +108,44 @@ class Analisis(ctk.CTkFrame):
             ret, frame = self.cap.read()
             if not ret:
                 break
+
+            analisis = None
+            try:
+                analisis = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
+            except Exception as e:
+                print("Error analizando emociones:", e)
+                self.reiniciar_camara_con_retraso()
+                break  # Detiene el bucle show_camera si hay un error
+
+            if analisis:
+                emocion = analisis[0].get("dominant_emotion", "Emoción no válida")
+
+                if emocion in ["Emoción no válida", "Error detectando emoción"]:
+                    print("Emoción no válida detectada. Reiniciando cámara...")
+                    self.reiniciar_camara_con_retraso()
+                    break  # Salir del bucle para permitir reinicio
+
+                # Acceder a las coordenadas del rostro
+                x = analisis[0]['region']['x']
+                y = analisis[0]['region']['y']
+                w = analisis[0]['region']['w']
+                h = analisis[0]['region']['h']
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            frame = cv2.flip(frame, 1)
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img = Image.fromarray(rgb).resize((640, 400))
             imgtk = ImageTk.PhotoImage(img)
             self.image_canvas.configure(image=imgtk)
             self.image_canvas.image = imgtk
+
+    def reiniciar_camara_con_retraso(self):
+        def esperar_y_reactivar():
+            time.sleep(3)
+            self.toggle_camera()  # Reactiva la cámara correctamente
+
+        self.toggle_camera()  # Desactiva la cámara
+        threading.Thread(target=esperar_y_reactivar, daemon=True).start()
 
     def capturar_foto(self):
         if self.camera_active and self.cap:
@@ -118,6 +153,7 @@ class Analisis(ctk.CTkFrame):
             if ret:
                 self.camera_active = False
                 self.cap.release()
+                frame = cv2.flip(frame, 1)
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(rgb).resize((640, 400))
                 imgtk = ImageTk.PhotoImage(img)
@@ -143,9 +179,13 @@ class Analisis(ctk.CTkFrame):
                     f.write(f"{timestamp} | {translated}\n")
             else:
                 self.result_label.configure(text="Emoción no válida")
+                self.reiniciar_camara_con_retraso()
         except Exception:
             self.result_label.configure(text="Error detectando emoción")
+            self.reiniciar_camara_con_retraso()
         self.analizando = False
+    
+
 
     def load_image(self):
         file_path = filedialog.askopenfilename(filetypes=[("Imágenes", "*.jpg *.jpeg *.png")])

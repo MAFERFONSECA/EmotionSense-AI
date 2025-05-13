@@ -10,3 +10,5 @@ Emoción detectada: Feliz
 Emoción detectada: Feliz
 Emoción detectada: Triste
 Emoción detectada: ---
+Emoción detectada: Feliz
+Emoción detectada: Feliz
