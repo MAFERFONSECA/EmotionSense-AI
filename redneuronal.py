@@ -53,9 +53,13 @@ class Analisis(ctk.CTkFrame):
         self.analizando = False
 
         self.emotion_translations = {
-            'angry': 'Enojo',
-            'happy': 'Feliz',
-            'sad': 'Triste',
+               "angry": "Enojado",
+               "disgust": "Disgustado",
+               "fear": "Con miedo",
+               "happy": "Feliz",
+               "sad": "Triste",
+               "surprise": "Sorprendido",
+               "neutral": "Neutral"
         }
 
         ctk.CTkLabel(self, text="Análisis Facial", font=("Segoe UI Black", 22), text_color='#483D8B').pack(pady=10)
@@ -138,6 +142,10 @@ class Analisis(ctk.CTkFrame):
             imgtk = ImageTk.PhotoImage(img)
             self.image_canvas.configure(image=imgtk)
             self.image_canvas.image = imgtk
+            translated = self.emotion_translations.get(emocion.lower(), emocion.capitalize())
+            self.result_label.configure(text=f"Emoción detectada: {translated}")
+            self.emocion_actual = translated  # Guarda la emoción actual para luego guardarla
+
 
     def reiniciar_camara_con_retraso(self):
         def esperar_y_reactivar():
