@@ -252,7 +252,7 @@ class Historial(ctk.CTkFrame):
             widget.destroy()
 
         # Cargar las emociones desde el archivo de historial
-        emociones = {'Enojo': 0, 'Feliz': 0, 'Triste': 0}
+        emociones = {'Enojado': 0, 'Feliz': 0, 'Triste': 0,  'Disgustado': 0,  'Con miedo': 0,  'Sorprendido': 0,  'Neutral': 0}
         try:
             with open("historial_emociones.txt", "r", encoding="utf-8") as f:
                 lineas = f.readlines()
@@ -266,7 +266,7 @@ class Historial(ctk.CTkFrame):
 
         # Crear la gráfica
         self.figure, ax = plt.subplots(figsize=(9, 7))
-        ax.bar(emociones.keys(), emociones.values(), color=['red', 'yellow', 'blue'])
+        ax.bar(emociones.keys(), emociones.values(), color=['red', 'yellow', 'blue', 'purple', 'indigo', 'orange', 'gray' ])
         ax.set_xlabel("Emociones")
         ax.set_ylabel("Frecuencia")
         ax.set_title("Frecuencia de Emociones Detectadas")
