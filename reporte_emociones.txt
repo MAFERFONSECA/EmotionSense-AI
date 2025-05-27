@@ -15,3 +15,22 @@ Emoción detectada: Feliz
 Emoción detectada: Neutral
 Emoción detectada: Neutral
 Emoción detectada: Enojado
+Emoción detectada: Triste
+Emoción detectada: Feliz
+Emoción detectada: Feliz
+Emoción detectada: Con miedo
+Emoción detectada: Con miedo
+Emoción detectada: Neutral
+Emoción detectada: Triste
+Emoción detectada: Neutral
+Emoción detectada: Feliz
+Emoción detectada: Triste
+Emoción detectada: Feliz
+Emoción detectada: Triste
+Emoción detectada: Enojado
+Emoción detectada: Feliz
+Emoción detectada: Feliz
+Emoción detectada: Enojado
+Emoción detectada: Feliz
+Emoción detectada: Feliz
+Emoción detectada: Neutral

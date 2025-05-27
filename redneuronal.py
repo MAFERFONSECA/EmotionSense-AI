@@ -9,6 +9,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
+import tkinter.messagebox as messagebox
+
 
 
 ctk.set_appearance_mode("light")
@@ -61,6 +63,7 @@ class Analisis(ctk.CTkFrame):
                "surprise": "Sorprendido",
                "neutral": "Neutral"
         }
+        
 
         ctk.CTkLabel(self, text="Análisis Facial", font=("Segoe UI Black", 22), text_color='#483D8B').pack(pady=10)
 
@@ -90,6 +93,7 @@ class Analisis(ctk.CTkFrame):
 
         ctk.CTkButton(btm_frame, text="💾 Guardar Resultado", command=self.save_results, width=180,
                        fg_color="#3ba200", hover_color="#297200", border_color="black").grid(row=0, column=0, padx=10)
+
 
     def volver(self):
         if self.camera_active:
@@ -155,6 +159,7 @@ class Analisis(ctk.CTkFrame):
         self.toggle_camera()  # Desactiva la cámara
         threading.Thread(target=esperar_y_reactivar, daemon=True).start()
 
+
     def capturar_foto(self):
         if self.camera_active and self.cap:
             ret, frame = self.cap.read()
@@ -209,10 +214,39 @@ class Analisis(ctk.CTkFrame):
             self.result_label.configure(text="Analizando emoción...")
             threading.Thread(target=self.analyze_emotion_thread, args=(img_array,), daemon=True).start()
 
+
+
     def save_results(self):
+        texto_resultado = self.result_label.cget("text")
+    # Guardar en reporte_emociones.txt
         with open("reporte_emociones.txt", "a", encoding="utf-8") as f:
-            f.write(self.result_label.cget("text") + "\n")
-        self.result_label.configure(text="Resultado guardado.")
+            f.write(texto_resultado + "\n")
+    # Guardar en historial_emociones.txt para que la gráfica actualice
+        with open("historial_emociones.txt", "a", encoding="utf-8") as f:
+        # Extraer solo la emoción detectada del texto
+            if "Emoción detectada:" in texto_resultado:
+                emocion = texto_resultado.split("Emoción detectada: ")[1]
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"{timestamp} | {emocion}\n")
+
+        messagebox.showinfo("Resultado", "Resultado guardado. La cámara se reiniciará en unos segundos")
+
+
+
+        if self.camera_active:
+            self.camera_active = False
+            self.cap.release()
+            
+
+        threading.Thread(target=self.reactivar_camara_con_retraso, daemon=True).start()
+
+    
+    def reactivar_camara_con_retraso(self):
+        time.sleep(1.5)  # Espera un momento para evitar error de acceso a cámara
+        self.toggle_camera()  # Vuelve a activar la cámara
+
+
+
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
