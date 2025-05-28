@@ -34,7 +34,7 @@ class Inicio(ctk.CTkFrame):
         ctk.CTkButton(self, text="Iniciar Análisis", command=self.ir_a_analisis, width=200,
                       fg_color="#3ba200", hover_color="#297200", border_color="black").pack(pady=10)
 
-        ctk.CTkButton(self, text="📊 Ver Gráfica", command=self.ir_a_historial, width=200,
+        ctk.CTkButton(self, text="📊 Ver Gráfica de Emociones", command=self.ir_a_historial, width=200,
                       fg_color="#6a5acd", hover_color="#483d8b", border_color="black").pack(pady=10)
 
         ctk.CTkButton(self, text="Salir", command=self.master.quit, width=100,
@@ -69,12 +69,6 @@ class Analisis(ctk.CTkFrame):
 
         btn_frame = ctk.CTkFrame(self)
         btn_frame.pack(pady=5)
-
-        ctk.CTkButton(btn_frame, text="📷 Cámara", command=self.toggle_camera, width=150,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=0, padx=10)
-
-        ctk.CTkButton(btn_frame, text="📂 Cargar Imagen", command=self.load_image, width=150,
-                      fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=1, padx=10)
 
         ctk.CTkButton(btn_frame, text="📸 Capturar Foto", command=self.capturar_foto, width=150,
                       fg_color="#6a5acd", hover_color="#483d8b").grid(row=0, column=2, padx=10)
@@ -229,7 +223,7 @@ class Analisis(ctk.CTkFrame):
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 f.write(f"{timestamp} | {emocion}\n")
 
-        messagebox.showinfo("Resultado", "Resultado guardado. La cámara se reiniciará en unos segundos")
+        messagebox.showinfo("Resultado", "Resultado guardado. La cámara se reiniciará  3 en unos segundos")
 
 
 
@@ -244,6 +238,10 @@ class Analisis(ctk.CTkFrame):
     def reactivar_camara_con_retraso(self):
         time.sleep(1.5)  # Espera un momento para evitar error de acceso a cámara
         self.toggle_camera()  # Vuelve a activar la cámara
+
+    def on_show(self):
+       if not self.camera_active:
+        self.toggle_camera()
 
 
 
@@ -342,6 +340,11 @@ class EmotionSenseApp(ctk.CTk):
 
     def mostrar_ventana(self, contenedor):
         self.frames[contenedor].tkraise()
+    
+    # Llama a on_show si el frame lo tiene definido
+        if hasattr(self.frames[contenedor], "on_show"):
+            self.frames[contenedor].on_show()
+
 
 if __name__ == "__main__":
     app = EmotionSenseApp()
