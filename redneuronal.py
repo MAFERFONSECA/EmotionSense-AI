@@ -49,19 +49,20 @@ class Inicio(ctk.CTkFrame):
 class Analisis(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
+        self.emocion_detectada = False
         self.master = master
         self.camera_active = False
         self.cap = None
         self.analizando = False
 
         self.emotion_translations = {
-               "angry": "Enojado",
-               "disgust": "Disgustado",
-               "fear": "Con miedo",
-               "happy": "Feliz",
-               "sad": "Triste",
-               "surprise": "Sorprendido",
-               "neutral": "Neutral"
+               "angry": "Enojado😠",
+               "disgust": "Disgustado🤢",
+               "fear": "Con miedo😨",
+               "happy": "Feliz😊",
+               "sad": "Triste😢",
+               "surprise": "Sorprendido😲",
+               "neutral": "Neutral😐"
         }
         
 
@@ -98,12 +99,36 @@ class Analisis(ctk.CTkFrame):
     def toggle_camera(self):
         if self.camera_active:
             self.camera_active = False
-            self.cap.release()
-            self.image_canvas.configure(image=None, text="Activa tu camara")
+            if self.cap:
+                self.cap.release()
+            self.image_canvas.configure(image=None, text="Activa tu cámara")
         else:
             self.cap = cv2.VideoCapture(0)
+            if not self.cap.isOpened():
+                # Cámara no disponible, mostrar mensaje
+                self.cap.release()
+                self.cap = None
+                respuesta = messagebox.askokcancel("Cámara no disponible", 
+                    "No se pudo activar la cámara. Por favor, activa tu cámara y presiona OK para intentar de nuevo.")
+                if respuesta:
+                    # El usuario quiere intentar abrir la cámara de nuevo
+                    self.try_reactivate_camera()
+                else:
+                    self.image_canvas.configure(text="Cámara no activada")
+            else:
+                self.camera_active = True
+                threading.Thread(target=self.show_camera, daemon=True).start()
+
+    def try_reactivate_camera(self):
+        # Espera un momento y vuelve a intentar abrir la cámara
+        time.sleep(1)
+        self.cap = cv2.VideoCapture(0)
+        if self.cap.isOpened():
             self.camera_active = True
             threading.Thread(target=self.show_camera, daemon=True).start()
+        else:
+            messagebox.showerror("Error", "No se pudo activar la cámara. Revisa que esté conectada y activa.")
+            self.image_canvas.configure(text="Cámara no activada")           
 
     def show_camera(self):
         while self.camera_active:
@@ -180,18 +205,20 @@ class Analisis(ctk.CTkFrame):
             if dominant.lower() in self.emotion_translations:
                 translated = self.emotion_translations[dominant.lower()]
                 self.result_label.configure(text=f"Emoción detectada: {translated}")
-
-                with open("historial_emociones.txt", "a", encoding="utf-8") as f:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    f.write(f"{timestamp} | {translated}\n")
+                self.emocion_actual = translated  # Guardar emoción detectada para después
+                self.emocion_detectada = True     # ✅ Marca que sí se detectó una emoción válida
             else:
                 self.result_label.configure(text="Emoción no válida")
+                self.emocion_actual = None
+                self.emocion_detectada = False
                 self.reiniciar_camara_con_retraso()
         except Exception:
             self.result_label.configure(text="Error detectando emoción")
+            self.emocion_actual = None
+            self.emocion_detectada = False
             self.reiniciar_camara_con_retraso()
+
         self.analizando = False
-    
 
 
     def load_image(self):
@@ -211,29 +238,30 @@ class Analisis(ctk.CTkFrame):
 
 
     def save_results(self):
+        if not self.emocion_detectada or not self.emocion_actual:
+            messagebox.showwarning("Advertencia", "Primero debes capturar una foto y detectar una emoción válida.")
+            return
+ 
         texto_resultado = self.result_label.cget("text")
+
     # Guardar en reporte_emociones.txt
         with open("reporte_emociones.txt", "a", encoding="utf-8") as f:
             f.write(texto_resultado + "\n")
-    # Guardar en historial_emociones.txt para que la gráfica actualice
+
+    # Guardar en historial_emociones.txt
         with open("historial_emociones.txt", "a", encoding="utf-8") as f:
-        # Extraer solo la emoción detectada del texto
-            if "Emoción detectada:" in texto_resultado:
-                emocion = texto_resultado.split("Emoción detectada: ")[1]
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                f.write(f"{timestamp} | {emocion}\n")
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"{timestamp} | {self.emocion_actual}\n")
 
-        messagebox.showinfo("Resultado", "Resultado guardado. La cámara se reiniciará  3 en unos segundos")
+        messagebox.showinfo("Resultado", "Resultado guardado. La cámara se reiniciará en unos segundos")
 
-
+        self.emocion_detectada = False  # ✅ Reset después de guardar
 
         if self.camera_active:
             self.camera_active = False
             self.cap.release()
-            
 
         threading.Thread(target=self.reactivar_camara_con_retraso, daemon=True).start()
-
     
     def reactivar_camara_con_retraso(self):
         time.sleep(1.5)  # Espera un momento para evitar error de acceso a cámara
@@ -245,9 +273,6 @@ class Analisis(ctk.CTkFrame):
 
 
 
-
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Historial(ctk.CTkFrame):
     def __init__(self, master):
@@ -284,7 +309,7 @@ class Historial(ctk.CTkFrame):
             widget.destroy()
 
         # Cargar las emociones desde el archivo de historial
-        emociones = {'Enojado': 0, 'Feliz': 0, 'Triste': 0,  'Disgustado': 0,  'Con miedo': 0,  'Sorprendido': 0,  'Neutral': 0}
+        emociones = {'Enojado😠': 0,'Feliz😊': 0,'Triste😢': 0, 'Disgustado🤢': 0, 'Con miedo😨': 0, 'Sorprendido😲': 0, 'Neutral😐': 0}
         try:
             with open("historial_emociones.txt", "r", encoding="utf-8") as f:
                 lineas = f.readlines()
@@ -299,9 +324,9 @@ class Historial(ctk.CTkFrame):
         # Crear la gráfica
         self.figure, ax = plt.subplots(figsize=(9, 7))
         ax.bar(emociones.keys(), emociones.values(), color=['red', 'yellow', 'blue', 'purple', 'indigo', 'orange', 'gray' ])
-        ax.set_xlabel("Emociones")
-        ax.set_ylabel("Frecuencia")
-        ax.set_title("Frecuencia de Emociones Detectadas")
+        ax.set_xlabel("Emociones", fontweight='bold')
+        ax.set_ylabel("Frecuencia", fontweight='bold')
+        ax.set_title("Frecuencia de Emociones Detectadas", fontweight='bold')
 
         # Mostrar la gráfica en el frame de la interfaz
         canvas = FigureCanvasTkAgg(self.figure, master=self.graph_frame)
@@ -325,6 +350,7 @@ class EmotionSenseApp(ctk.CTk):
         super().__init__()
         self.title("EmotionSense AI")
         ancho, alto = 950, 720
+        self.update_idletasks() 
         x = (self.winfo_screenwidth() // 2) - (ancho // 2)
         y = (self.winfo_screenheight() // 2) - (alto // 2)
         self.geometry(f"{ancho}x{alto}+{x}+{y}")
