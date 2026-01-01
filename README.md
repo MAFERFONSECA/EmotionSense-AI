@@ -46,5 +46,6 @@ La aplicación cuenta con:
 
 ## 📸 Capturas del sistema
 Las capturas del funcionamiento y diseño de la aplicación se encuentran en la carpeta `screenshots`.
+![Inicio](screenshots/inicio.png)
 ![Análisis facial](screenshots/analisis.png)
-![Gráfica de emociones](screenshots/grafica.png)
+![Gráfica de emociones](screenshots/graficas.png)
